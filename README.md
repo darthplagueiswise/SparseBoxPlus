@@ -1,5 +1,6 @@
 # SparseBox+
 **SparseBox, but with a proper UI. iOS 16.0 - iOS 26.1 (and 26.2 *beta 1*).**
+
 [Download](https://github.com/jailbreakdotparty/SparseBoxPlus/releases/latest) • [jbdotparty Discord](https://jailbreak.party/discord) • [jbdotparty Website](https://jailbreak.party)
 >[!WARNING]
 >This tool has the potential to break or bootloop your device! Please create a backup before any further usage.
@@ -17,11 +18,11 @@
   - Enable Action Button
   - Enable Crash Detection
   - Enable Security Research Device UI
-  - Disable Region Restrictions (please do not use this for any illegal activites!)
+  - Disable Region Restrictions
   - Enable Apple Intelligence (+ model spoofing)
   - Allow Installing iPadOS Apps
   - Enable Apple Pencil Settings
-  - Enable iPadOS UI (**WARNING:** Please do not turn off "Show Dock In Stage Manager" or your device will BOOTLOOP when rotating to landscape. Also, do NOT use this tweak with an alphanumeric passcode!
+  - Enable iPadOS UI (**WARNING:** Please do not turn off "Show Dock In Stage Manager" or your device will BOOTLOOP when rotating to landscape. Also, do NOT use this tweak with an alphanumeric passcode!)
   - Enable Internal Storage
   - Enable Internal Features
   - Metal HUD in All Apps
