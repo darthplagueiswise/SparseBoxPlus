@@ -1,109 +1,195 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PartyUI
+import DeviceKit
 
 struct MobileGestaltView: View {
-    let origMGURL, modMGURL, featFlagsURL: URL
-    @AppStorage("BookassetdContainerUUID") private var bookassetdUUID: String?
-    @Environment(\.scenePhase) var scenePhase
-    @State var mbdb: Backup?
-    @State var eligibilityData = Data()
-    @State var featureFlagsData = Data()
-    @State var mobileGestalt: NSMutableDictionary
-    @State var productType = machineName()
-    @State var respring = true
-    @State var showPairingFileImporter = false
-    @State var showErrorAlert = false
-    @State var taskRunning = false
-    @State var initError: String?
-    @State var lastError: String?
+    @State private var mbdb: Backup?
+    @State private var eligibilityData = Data()
+    @State private var featureFlagsData = Data()
+    @State private var mobileGestalt: NSMutableDictionary
+    @State private var productType = machineName()
     
-    @State var showBookassetdUUIDGuideAlert = false
+    @State private var respring = true
+    @State private var taskRunning = false
+    @State private var initError: String?
+    @State private var viewShouldUpdate = false
+    
+    @State private var showMobileGestaltFileView: Bool = false
+    @State private var applicationIcon: String = "checkmark.circle.fill"
+    @State private var applicationIconColor: Color = .primary
+    @State private var applicationStatus: String = "Ready to Apply"
+    @State private var hasShownWelcome: Bool = false
+    
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) var scenePhase
+    
+    @AppStorage("BookassetdContainerUUID") private var bookassetdUUID: String?
+    
+    let device = Device.current
+    let origMGURL, modMGURL, featFlagsURL: URL
+    
     var body: some View {
-        Form {
-            Section {
-                Text("HTTP server port \(Utils.port)")
-            } header: {
-                Text("Debug")
-            }
-            Section {
-                Toggle("Action Button", isOn: bindingForMGKeys(["cT44WE1EohiwRzhsZ8xEsw"]))
-                    .disabled(Utils.requiresVersion(17))
-                Toggle("Allow installing iPadOS apps", isOn: bindingForMGKeys(["9MZ5AdH43csAUajl/dU+IQ"], type: [Int].self, defaultValue: [1], enableValue: [1, 2]))
-                Toggle("Always on Display (18.0+)", isOn: bindingForMGKeys(["j8/Omm6s1lsmTDFsXjsBfA", "2OOJf1VhaM7NxfRok3HbWQ"]))
-                    .disabled(Utils.requiresVersion(18))
-                Toggle("Apple Intelligence", isOn: bindingForAppleIntelligence())
-                    .disabled(Utils.requiresVersion(18))
-                Toggle("Apple Pencil", isOn: bindingForMGKeys(["yhHcB0iH0d1XzPO/CFd3ow"]))
-                Toggle("Boot chime", isOn: bindingForMGKeys(["QHxt+hGLaBPbQJbXiUJX3w"]))
-                Toggle("Camera button (18.0rc+)", isOn: bindingForMGKeys(["CwvKxM2cEogD3p+HYgaW0Q", "oOV1jhJbdV3AddkcCg0AEA"]))
-                    .disabled(Utils.requiresVersion(18))
-                Toggle("Charge limit", isOn: bindingForMGKeys(["37NVydb//GP/GrhuTN+exg"]))
-                    .disabled(Utils.requiresVersion(17))
-                Toggle("Crash Detection (might not work)", isOn: bindingForMGKeys(["HCzWusHQwZDea6nNhaKndw"]))
-                Toggle("Dynamic Island (17.4+, might not work)", isOn: bindingForMGKeys(["YlEtTtHlNesRBMal1CqRaA"]))
-                    .disabled(Utils.requiresVersion(17, 4))
-                Toggle("Disable region restrictions", isOn: bindingForRegionRestriction())
-                Toggle("Internal Storage info", isOn: bindingForMGKeys(["LBJfwOEzExRxzlAnSuI7eg"]))
-                Toggle("Internal stuff", isOn: bindingForInternalStuff())
-                Toggle("Security Research Device", isOn: bindingForMGKeys(["XYlJKKkj2hztRP1NWWnhlw"]))
-                Toggle("Metal HUD for all apps", isOn: bindingForMGKeys(["EqrsVvjcYDdxHBiQmGhAWw"]))
-                Toggle("Stage Manager", isOn: bindingForMGKeys(["qeaj75wk3HF4DwQ8qbIi7g"]))
-                    .disabled(UIDevice.current.userInterfaceIdiom != .pad)
-                if UIDevice._hasHomeButton() {
-                    Toggle("Tap to Wake (iPhone SE)", isOn: bindingForMGKeys(["yZf3GTRMGTuwSV/lD7Cagw"]))
+        NavigationStack {
+            List {
+                Section(header: HeaderLabel(text: "MobileGesalt Tweaks", icon: "sparkle")) {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            if applicationIcon == "showMeProgressPlease" {
+                                ProgressView()
+                                    .offset(y: 1)
+                            } else {
+                                Image(systemName: applicationIcon)
+                                    .foregroundStyle(applicationIconColor)
+                            }
+                            Text(applicationStatus)
+                                .fontWeight(.semibold)
+                        }
+                        Text("HTTP Server Port: \(String(Utils.port))")
+                        TerminalContainer(content: VStack {
+                            LogView()
+                        })
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .modifier(DynamicGlassEffect(shape: AnyShape(.rect(cornerRadius: 24)), useBackground: false))
                 }
-            } header: {
-                Text("MobileGestalt")
-            }
-            Section {
-                Picker("Device model", selection:$productType) {
-                    Text("unchanged").tag(MobileGestaltView.machineName())
-                    if UIDevice.current.userInterfaceIdiom == .pad {
-                        Text("iPad Pro 11 inch 5th Gen").tag("iPad16,3")
-                    } else {
-                        Text("iPhone 15 Pro Max").tag("iPhone16,2")
-                        Text("iPhone 16 Pro Max").tag("iPhone17,2")
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "Application Settings", icon: "gear")) {
+                    HStack {
+                        TextField("bookassetsd UUID", text: Binding(
+                            get: { bookassetdUUID ?? "" },
+                            set: { bookassetdUUID = $0.isEmpty ? nil : $0 }
+                        ))
+                        .textFieldStyle(GlassyTextFieldStyle(isDisabled: bookassetdUUID == nil))
+                        Button(action: {
+                            bookassetdUUID = nil
+                        }) {
+                            Image(systemName: "xmark")
+                                .frame(width: 18, height: 24)
+                        }
+                        .buttonStyle(GlassyButtonStyle(isDisabled: bookassetdUUID == nil, color: .red, useFullWidth: false))
+                    }
+                    .disabled(bookassetdUUID == nil)
+                    Toggle("Respring After Finish Restoring", isOn: $respring)
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "Software-Oriented Features", icon: "gearshape")) {
+                    ListToggleItem(text: "Enable Dynamic Island", icon: "platter.filled.top.iphone", minSupportedVersion: 17.4, isOn: bindingForMGKeys(["YlEtTtHlNesRBMal1CqRaA"]))
+                    ListToggleItem(text: "Enable Always On Display", icon: "sun.max", minSupportedVersion: 18.0, isOn: bindingForMGKeys(["j8/Omm6s1lsmTDFsXjsBfA", "2OOJf1VhaM7NxfRok3HbWQ"]))
+                    ListToggleItem(text: "Enable Charge Limit", icon: "battery.100.bolt", minSupportedVersion: 17.0, isOn: bindingForMGKeys(["37NVydb//GP/GrhuTN+exg"]))
+                    ListToggleItem(text: "Enable Boot Chime", icon: "speaker.wave.3", isOn: bindingForMGKeys(["QHxt+hGLaBPbQJbXiUJX3w"]))
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "Hardware-Oriented Features", icon: "iphone")) {
+                    ListToggleItem(text: "Enable Camera Control", icon: "camera.shutter.button", minSupportedVersion: 18.0, isOn: bindingForMGKeys(["CwvKxM2cEogD3p+HYgaW0Q", "oOV1jhJbdV3AddkcCg0AEA"]))
+                    ListToggleItem(text: "Enable Action Button", icon: "button.vertical.left.press", minSupportedVersion: 17.0, isOn: bindingForMGKeys(["cT44WE1EohiwRzhsZ8xEsw"]))
+                    ListToggleItem(text: "Enable Crash Detection", icon: "car", isOn: bindingForMGKeys(["HCzWusHQwZDea6nNhaKndw"]))
+                    if UIDevice._hasHomeButton() {
+                        ListToggleItem(text: "Enable Tap to Wake", icon: "hand.tap", isOn: bindingForMGKeys(["yZf3GTRMGTuwSV/lD7Cagw"]))
                     }
                 }
-                //.disabled(Utils.requiresVersion(18, 1))
-            } header: {
-                Text("Device spoofing")
-            } footer: {
-                Text("Only change device model if you're downloading Apple Intelligence models. Face ID may break.")
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "Eligibility", icon: "checklist")) {
+                    ListToggleItem(text: "Enable SRD UI", icon: "terminal", minSupportedVersion: 26.0, isOn: bindingForMGKeys(["XYlJKKkj2hztRP1NWWnhlw"]))
+                    ListToggleItem(text: "Disable Region Restrictions", icon: "globe", isOn: bindingForRegionRestriction())
+                    ListToggleItem(text: "Enable Apple Intelligence", icon: "apple.intelligence", minSupportedVersion: 18.1, isOn: bindingForAppleIntelligence())
+                    HStack {
+                        Picker("Model Spoofing", selection:$productType) {
+                            Text("Default").tag(MobileGestaltView.machineName())
+                            if UIDevice.current.userInterfaceIdiom == .pad {
+                                Text("iPad Pro 11 inch 5th Gen").tag("iPad16,3")
+                            } else {
+                                Text("iPhone 15 Pro Max").tag("iPhone16,2")
+                                Text("iPhone 16 Pro Max").tag("iPhone17,2")
+                            }
+                        }
+                        .modifier(GlassyListRowBackground())
+                        Button(action: {
+                            Alertinator.shared.alert(title: "Device Spoofing Info", body: "Only spoof your device model if you want to download Apple Intelligence. This may break Face ID. If you decide to unspoof and want to keep Apple Intelligence, do NOT re-enter the Apple Intelligence & Siri menu in Settings.")
+                        }) {
+                            Image(systemName: "info.circle")
+                                .frame(width: 24, height: 24)
+                        }
+                        .buttonStyle(GlassyButtonStyle(useFullWidth: false))
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "iPadOS Features", icon: "ipad")) {
+                    let cacheExtra = mobileGestalt["CacheExtra"] as? NSMutableDictionary
+                    
+                    ListToggleItem(text: "Allow Installing iPadOS Apps", icon: "plus.app", isOn: bindingForMGKeys(["9MZ5AdH43csAUajl/dU+IQ"], type: [Int].self, defaultValue: [1], enableValue: [1, 2]))
+                    ListToggleItem(text: "Enable Apple Pencil Settings", icon: "pencil", isOn: bindingForMGKeys(["yhHcB0iH0d1XzPO/CFd3ow"]))
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        ListToggleItem(text: "Enable Stage Manager", icon: "squares.leading.rectangle", isOn: bindingForMGKeys(["qeaj75wk3HF4DwQ8qbIi7g"]))
+                    }
+                    HStack {
+                        ListToggleItem(text: "Enable iPadOS UI", icon: "ipad", isOn: bindingForTrollPad())
+                            .disabled(cacheExtra?["+3Uf0Pm5F8Xy7Onyvko0vA"] as? String != "iPhone")
+                        Button(action: {
+                            Alertinator.shared.alert(title: "Warning!", body: "This changes the UI idiom to iPadOS, giving you multitasking features and other iPadOS UI elements. Gives the same capbilities as TrollPad, but may cause issues.\n\nWARNING: Please do not turn off \"Show Dock In Stage Manager\" or your device will BOOTLOOP when rotating to landscape. Also, do NOT use this tweak with an alphanumeric passcode!")
+                        }) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .frame(width: 24, height: 24)
+                        }
+                        .buttonStyle(GlassyButtonStyle(color: .red, useFullWidth: false))
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
+                Section(header: HeaderLabel(text: "Internal", icon: "ant")) {
+                    ListToggleItem(text: "Enable Internal Storage", icon: "externaldrive", isOn: bindingForMGKeys(["LBJfwOEzExRxzlAnSuI7eg"]))
+                    ListToggleItem(text: "Enable Internal Features", icon: "gearshape", isOn: bindingForInternalStuff())
+                    ListToggleItem(text: "Metal HUD in All Apps", icon: "terminal", isOn: bindingForMGKeys(["EqrsVvjcYDdxHBiQmGhAWw"]))
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
             }
-            Section {
-                let cacheExtra = mobileGestalt["CacheExtra"] as? NSMutableDictionary
-                Toggle("Become iPadOS", isOn: bindingForTrollPad())
-                // validate DeviceClass
-                    .disabled(cacheExtra?["+3Uf0Pm5F8Xy7Onyvko0vA"] as? String != "iPhone")
-            } footer: {
-                Text("Override user interface idiom to iPadOS, so you could use all iPadOS multitasking features on iPhone. Gives you the same capabilities as TrollPad, but may cause some issues.\nPLEASE DO NOT TURN OFF SHOW DOCK IN STAGE MANAGER OTHERWISE YOUR PHONE WILL BOOTLOOP WHEN ROTATING TO LANDSCAPE.")
+            .listStyle(.plain)
+            .navigationTitle("MobileGestalt")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        showMobileGestaltFileView.toggle()
+                    }) {
+                        Image(systemName: "doc")
+                    }
+                }
             }
-            Section {
-                Toggle("Respring after finish restoring", isOn: $respring)
-                NavigationLink("Apply changes") {
-                    LogView()
-                        .onAppear {
-                            saveProductType()
-                            try! mobileGestalt.write(to: modMGURL)
-                            DispatchQueue.global(qos: .background).async {
-                                Task {
-                                    do {
-                                        try await performApplyMobileGestalt()
-                                    } catch {
-                                        await MainActor.run {
-                                            lastError = "\(error)"
-                                            showErrorAlert = true
-                                        }
+            .safeAreaInset(edge: .bottom) {
+                VStack {
+                    Button(action: {
+                        saveProductType()
+                        try! mobileGestalt.write(to: modMGURL)
+                        DispatchQueue.global(qos: .background).async {
+                            Task {
+                                do {
+                                    try await performApplyMobileGestalt()
+                                } catch {
+                                    await MainActor.run {
+                                        Alertinator.shared.alert(title: "Failed to Apply!", body: "Error: \(error)")
                                     }
                                 }
                             }
                         }
-                }
-                .disabled(taskRunning)
-                NavigationLink("Reset changes") {
-                    LogView()
-                        .onAppear {
+                    }) {
+                        ButtonLabel(text: "Apply Tweaks", icon: "checkmark")
+                    }
+                    .buttonStyle(GlassyButtonStyle(color: .green))
+                    
+                    HStack {
+                        Button(action: {
                             try! FileManager.default.removeItem(at: modMGURL)
                             try! FileManager.default.copyItem(at: origMGURL, to: modMGURL)
                             mobileGestalt = try! NSMutableDictionary(contentsOf: modMGURL, error: ())
@@ -113,78 +199,81 @@ struct MobileGestaltView: View {
                                         try await performApplyMobileGestalt()
                                     } catch {
                                         await MainActor.run {
-                                            lastError = "\(error)"
-                                            showErrorAlert = true
+                                            Alertinator.shared.alert(title: "Failed to Revert!", body: "Error: \(error)")
                                         }
                                     }
                                 }
                             }
+                        }) {
+                            ButtonLabel(text: "Revert", icon: "xmark")
                         }
-                }
-                .disabled(taskRunning)
-            }
-            Section {
-                //ShareLink("Export Modified MobileGestalt", item: modMGURL)
-                Button("Export Modified MobileGestalt", systemImage: "square.and.arrow.up") {
-                    saveProductType()
-                    try! mobileGestalt.write(to: modMGURL)
-                    let activityVC = UIActivityViewController(activityItems: [modMGURL], applicationActivities: nil)
-                    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                        scene.windows.first?.rootViewController?.present(activityVC, animated: true, completion: nil)
+                        .buttonStyle(GlassyButtonStyle(color: .red))
+                        Button(action: {
+                            respringDevice()
+                        }) {
+                            ButtonLabel(text: "Respring", icon: "gobackward")
+                        }
+                        .buttonStyle(GlassyButtonStyle(color: .orange))
                     }
                 }
-                ShareLink("Export Original MobileGestalt", item: origMGURL)
+                .modifier(OverlayBackground())
             }
-            Section {
-                Button("Clear bookassetd UUID") {
-                    bookassetdUUID = nil
+            .onAppear {
+                if !hasShownWelcome {
+                    print("[*] Welcome to SparseBox+!\n[*] Running on \(device.systemName!) \(device.systemVersion!), \(device.description)\n[!] WARNING: This tool has the potential to break or bootloop your device! It's highly recommended to create a backup before usage.\n[*] wait, this ui seems familiar...")
+                    hasShownWelcome = true
                 }
-                .disabled(bookassetdUUID == nil)
-            } footer: {
-                Text("For debugging only.")
-            }
-        }
-        .alert("Error", isPresented: $showErrorAlert) {
-            Button("OK") {}
-        } message: {
-            Text(lastError ?? "???")
-        }
-        .alert("Instruction", isPresented: $showBookassetdUUIDGuideAlert) {
-            Button("Got it") {
-                LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: "com.apple.iBooks")
-            }
-        } message: {
-            Text("SparseBox needs to get bookassetd UUID to continue. Please download a book from Apple Books app while this app is running, then come back here.")
-        }
-        .navigationTitle("MobileGestalt")
-        .onAppear {
-            if initError != nil {
-                lastError = initError
-                initError = nil
-                showErrorAlert.toggle()
-                return
-            }
-            
-            if let cacheExtra = mobileGestalt["CacheExtra"] as? NSMutableDictionary {
-                productType = cacheExtra["h9jDsbgj7xIVeIQ8S3/X3Q"] as! String
-            }
-        }
-        .onChange(of: scenePhase) { newPhase in
-            // keep HTTP server alive in the background for a while
-            if scenePhase == .inactive {
-                Utils.bgTask = UIApplication.shared.beginBackgroundTask(expirationHandler: {
-                    // This executes when time is about to run out
-                    UIApplication.shared.endBackgroundTask(Utils.bgTask)
-                    Utils.bgTask = .invalid
-                })
-                if Utils.bgTask == .invalid {
-                    print("Failed to start background task")
+                
+                if initError != nil {
+                    Alertinator.shared.alert(title: "Error!", body: "\(initError ?? "something happened lol")")
                     return
                 }
-            } else if scenePhase == .active {
-                if Utils.bgTask != .invalid {
-                    UIApplication.shared.endBackgroundTask(Utils.bgTask)
-                    Utils.bgTask = .invalid
+                
+                if let cacheExtra = mobileGestalt["CacheExtra"] as? NSMutableDictionary {
+                    productType = cacheExtra["h9jDsbgj7xIVeIQ8S3/X3Q"] as! String
+                }
+            }
+            .onChange(of: scenePhase) { newPhase in
+                // keep HTTP server alive in the background for a while
+                if scenePhase == .inactive {
+                    Utils.bgTask = UIApplication.shared.beginBackgroundTask(expirationHandler: {
+                        // This executes when time is about to run out
+                        UIApplication.shared.endBackgroundTask(Utils.bgTask)
+                        Utils.bgTask = .invalid
+                    })
+                    if Utils.bgTask == .invalid {
+                        print("Failed to start background task")
+                        return
+                    }
+                } else if scenePhase == .active {
+                    if Utils.bgTask != .invalid {
+                        UIApplication.shared.endBackgroundTask(Utils.bgTask)
+                        Utils.bgTask = .invalid
+                    }
+                }
+            }
+            .sheet(isPresented: $showMobileGestaltFileView) {
+                MobileGestaltViewer() {
+                    // fix this please: not surprised this didn't work how i hoped it would
+                    Section(header: HeaderLabel(text: "Actions", icon: "wrench.and.screwdriver.fill")) {
+                        VStack(spacing: 8) {
+                            Button(action: {
+                                saveProductType()
+                                try! mobileGestalt.write(to: modMGURL)
+                                presentShareSheet(with: modMGURL)
+                            }) {
+                                ButtonLabel(text: "Export Modified MobileGestalt", icon: "doc.badge.gearshape")
+                            }
+                            .buttonStyle(GlassyButtonStyle())
+                            
+                            Button(action: {
+                                presentShareSheet(with: origMGURL)
+                            }) {
+                                ButtonLabel(text: "Export Original MobileGestalt", icon: "arrow.up.doc")
+                            }
+                            .buttonStyle(GlassyButtonStyle())
+                        }
+                    }
                 }
             }
         }
@@ -223,6 +312,7 @@ struct MobileGestaltView: View {
         let key = "A62OafQ85EJAiiqKn4agtg"
         return Binding(
             get: {
+                _ = viewShouldUpdate
                 if let value = cacheExtra[key] as? Int? {
                     return value == 1
                 }
@@ -239,6 +329,9 @@ struct MobileGestaltView: View {
                     // just remove the key as it will be pulled from device tree if missing
                     cacheExtra.removeObject(forKey: key)
                 }
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
+                }
             }
         )
     }
@@ -249,6 +342,7 @@ struct MobileGestaltView: View {
         }
         return Binding<Bool>(
             get: {
+                _ = viewShouldUpdate
                 return cacheExtra["h63QSdBCiT/z0WU6rdQv6Q"] as? String == "US" &&
                     cacheExtra["zHeENZu+wbg7PUprwNwBWg"] as? String == "LL/A"
             },
@@ -259,6 +353,9 @@ struct MobileGestaltView: View {
                 } else {
                     cacheExtra.removeObject(forKey: "h63QSdBCiT/z0WU6rdQv6Q")
                     cacheExtra.removeObject(forKey: "zHeENZu+wbg7PUprwNwBWg")
+                }
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
                 }
             }
         )
@@ -276,12 +373,16 @@ struct MobileGestaltView: View {
         
         return Binding(
             get: {
+                _ = viewShouldUpdate
                 return cacheData.bytes.load(fromByteOffset: off_appleInternalInstall, as: Int.self) == 1
             },
             set: { enabled in
                 cacheData.mutableBytes.storeBytes(of: enabled ? 1 : 0, toByteOffset: off_appleInternalInstall, as: Int.self)
                 cacheData.mutableBytes.storeBytes(of: enabled ? 1 : 0, toByteOffset: off_HasInternalSettingsBundle, as: Int.self)
                 cacheData.mutableBytes.storeBytes(of: enabled ? 1 : 0, toByteOffset: off_InternalBuild, as: Int.self)
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
+                }
             }
         )
     }
@@ -305,6 +406,7 @@ struct MobileGestaltView: View {
         ]
         return Binding(
             get: {
+                _ = viewShouldUpdate
                 if let value = cacheExtra[keys.first!] as? Int? {
                     return value == 1
                 }
@@ -320,6 +422,9 @@ struct MobileGestaltView: View {
                         cacheExtra.removeObject(forKey: key)
                     }
                 }
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
+                }
             }
         )
     }
@@ -330,6 +435,7 @@ struct MobileGestaltView: View {
         }
         return Binding(
             get: {
+                _ = viewShouldUpdate
                 if let value = cacheExtra[keys.first!] as? T?, let enableValue {
                     return value == enableValue
                 }
@@ -343,6 +449,9 @@ struct MobileGestaltView: View {
                         // just remove the key as it will be pulled from device tree if missing
                         cacheExtra.removeObject(forKey: key)
                     }
+                }
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
                 }
             }
         )
@@ -374,12 +483,18 @@ struct MobileGestaltView: View {
     }
     
     func performApplyMobileGestalt() async throws {
+        applicationIcon = "showMeProgressPlease"
+        applicationStatus = "Applying Tweaks..."
+        
         let context = JITEnableContext.shared
         var line: String
         
         // get bookassetd container uuid
         if bookassetdUUID == nil {
-            showBookassetdUUIDGuideAlert.toggle()
+            applicationStatus = "Getting bookassestd UUID..."
+            Alertinator.shared.alert(title: "Books UUID Required", body: "SparseBox needs to get the UUID from bookasstd,. Please download a book from the Books app while this one is running, then come back here.", showCancel: false, actionLabel: "continue", action: {
+                LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: "com.apple.iBooks")
+            })
             
             print("Finding bookassetd container UUID...")
             print("Please open Books app and download a book to continue.")
@@ -391,8 +506,11 @@ struct MobileGestaltView: View {
             bookassetdUUID = line.components(separatedBy: "/var/containers/Shared/SystemGroup/")[1]
                 .components(separatedBy: "/Documents/BLDownloads")[0]
             if bookassetdUUID == nil {
-                lastError = "Failed to get bookassetd container UUID from syslog."
-                showErrorAlert = true
+                applicationIcon = "xmark.circle"
+                applicationStatus = "Failed to get bookassetd UUID!"
+                applicationIconColor = .red
+                
+                Alertinator.shared.alert(title: "Error!", body: "Failed to get bookassetd container UUID from syslog.")
                 return
             }
         }
@@ -421,6 +539,7 @@ struct MobileGestaltView: View {
             try? FileManager.default.copyItem(atPath: resourcePath, toPath: bldLocalPath + "-wal")
         }
         
+        applicationStatus = "Patching BLDatabaseManager.sqlite..."
         print("Patching BLDatabaseManager.sqlite...")
         try Databases.patchDatabase(dbPath: d28LocalPath, uuid: bookassetdUUID!, ip: "localhost", port: Utils.port)
         
@@ -429,19 +548,23 @@ struct MobileGestaltView: View {
         var pid_bookassetd = processes.first { $0.value?.hasSuffix("/bookassetd") == true }?.key
         var pid_Books = processes.first { $0.value?.hasSuffix("/Books") == true }?.key
         if let pid_bookassetd {
+            applicationStatus = "topping bookassetd (pid \(pid_bookassetd))..."
             print("Stopping bookassetd (pid \(pid_bookassetd))...")
             try context?.killProcess(withPID: pid_bookassetd, signal: SIGSTOP)
         }
         if let pid_Books {
+            applicationStatus = "Killing Books (pid \(pid_Books))..."
             print("Killing Books (pid \(pid_Books))...")
             try context?.killProcess(withPID: pid_Books, signal: SIGKILL)
         }
         
         // Upload com.apple.MobileGestalt.plist
+        applicationStatus = "Uploading MobileGestalt..."
         print("Uploading com.apple.MobileGestalt.plist")
         try context?.afcPushFile(modMGURL.path(), toPath: "com.apple.MobileGestalt.plist")
         
         // Upload downloads.28.sqlitedb
+        applicationStatus = "Uploading Database..."
         print("Uploading downloads.28.sqlitedb")
         try context?.afcPushFile(d28LocalPath, toPath: "Downloads/downloads.28.sqlitedb")
         try context?.afcPushFile(d28LocalPath + "-shm", toPath: "Downloads/downloads.28.sqlitedb-shm")
@@ -452,11 +575,13 @@ struct MobileGestaltView: View {
         processes = try getRunningProcesses()
         let pid_itunesstored = processes.first { $0.value?.hasSuffix("/itunesstored") == true }?.key
         if let pid_itunesstored {
+            applicationStatus = "Killing itunesstored (pid \(pid_itunesstored))..."
             print("Killing itunesstored (pid \(pid_itunesstored))...")
             try context?.killProcess(withPID: pid_itunesstored, signal: SIGKILL)
         }
         
         // Wait for itunesstored to finish download and raise an error
+        applicationStatus = "Waiting for itunesstored to finish download..."
         print("Waiting for itunesstored to finish download...")
         // FIXME: syslog not working
         _ = try await waitForSyslogLine(matches: { $0.contains("Install complete for download: 6936249076851270152 result: Failed") }, timeout: 2)
@@ -465,10 +590,12 @@ struct MobileGestaltView: View {
         pid_bookassetd = processes.first { $0.value?.hasSuffix("/bookassetd") == true }?.key
         pid_Books = processes.first { $0.value?.hasSuffix("/Books") == true }?.key
         if let pid_bookassetd {
+            applicationStatus = "Killing bookassetd (pid \(pid_bookassetd))..."
             print("Killing bookassetd (pid \(pid_bookassetd))...")
             try context?.killProcess(withPID: pid_bookassetd, signal: SIGKILL)
         }
         if let pid_Books {
+            applicationStatus = "Killing Books (pid \(pid_Books))..."
             print("Killing Books (pid \(pid_Books))...")
             try context?.killProcess(withPID: pid_Books, signal: SIGKILL)
         }
@@ -477,7 +604,11 @@ struct MobileGestaltView: View {
         LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: "com.apple.iBooks")
         LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: Bundle.main.bundleIdentifier!)
         
+        applicationStatus = "Waiting for overwrite to complete..."
         print("Waiting for MobileGestalt overwrite to complete...")
+        applicationStatus = "Tweaks Applied Successfully!"
+        applicationIcon = "checkmark.circle.fill"
+        applicationIconColor = .green
         let success_message = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist) [Install-Mgr]: Marking download as [finished]"
         // FIXME: syslog not working
         _ = try await waitForSyslogLine(matches: { $0.contains(success_message) }, timeout: 3)
@@ -553,5 +684,107 @@ struct MobileGestaltView: View {
         }
         JITEnableContext.shared.stopSyslogRelay()
         return result
+    }
+    
+    func respringDevice() {
+        let context = JITEnableContext.shared
+        var processes: [Int32 : String?] = try! getRunningProcesses()
+        
+        print("Respringing...")
+        let pid_backboardd = processes.first { $0.value?.hasSuffix("/backboardd") == true }?.key
+        if let pid_backboardd {
+            try! context?.killProcess(withPID: pid_backboardd, signal: SIGKILL)
+        }
+    }
+}
+
+// i am so sorry for doing this, but it fixed the weird ui issues so womp womp
+struct MobileGestaltViewer<Content: View>: View {
+    let pathToGestalt = URL(fileURLWithPath: "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist")
+    
+    @State var gestaltData: [String: Any] = [:]
+    @State var topLevelCache: [String: Any] = [:]
+    @State var searchRequest: String = ""
+    @ViewBuilder var content: Content
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                content
+                Section(header: HeaderLabel(text: "MobileGestalt Data", icon: "doc")) {
+                    DictionaryView(dictionary: topLevelCache, searchRequest: searchRequest)
+                }
+            }
+            .navigationTitle("MobileGestalt Data")
+            .searchable(text: $searchRequest, prompt: "Search Keys")
+            .onAppear {
+                gestaltData = loadGestaltData() as? [String: Any] ?? [:]
+                topLevelCache = gestaltData["CacheExtra"] as? [String: Any] ?? [:]
+            }
+        }
+    }
+
+    func loadGestaltData() -> Any? {
+        do {
+            // this gets the data of the file
+            let rawGestaltData = try Data(contentsOf: pathToGestalt)
+            // this returns it as a property list
+            return try PropertyListSerialization.propertyList(from: rawGestaltData, options: [], format: nil)
+        } catch {
+            // this comes up if something goes wrong
+            Alertinator.shared.alert(title: "Error!", body: "\(error)")
+            return nil
+        }
+    }
+}
+
+struct DictionaryView: View {
+    var dictionary: [String: Any]
+    var searchRequest: String = ""
+    
+    var body: some View {
+        ForEach(searchRequest.isEmpty ? Array(dictionary.keys.sorted()) : Array(dictionary.keys.sorted()).filter { $0.localizedStandardContains(searchRequest) }, id: \.self) { key in
+            let rawValue = dictionary[key] ?? "N/A"
+            let value = String(describing: rawValue)
+            VStack(alignment: .leading, spacing: 14) {
+                if value.contains("""
+                    {
+                    
+                    """) {
+                    let nestedDictionary = rawValue as? [String: Any] ?? [:]
+                    DisclosureGroup {
+                        DictionaryView(dictionary: nestedDictionary)
+                            .padding(.leading, 20)
+                    } label: {
+                        Text(key)
+                    }
+                } else {
+                    LabeledContent(key) {
+                        Text(value)
+                    }
+                    .contextMenu {
+                        Button(action: {
+                            UIPasteboard.general.string = key
+                        }) {
+                            Image(systemName: "key")
+                            Text("Copy Key")
+                        }
+                        Button(action: {
+                            UIPasteboard.general.string = value
+                        }) {
+                            Image(systemName: "link")
+                            Text("Copy Value")
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        MobileGestaltView()
     }
 }

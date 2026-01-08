@@ -15,13 +15,13 @@ struct LogView: View {
     @StateObject private var log = GLOBAL_LOG
     @State var ran = false
     var body: some View {
-        NavigationView {
+        GeometryReader { geometry in
             ScrollViewReader { proxy in
                 ScrollView {
                     Text(GLOBAL_LOG.text)
-                        .font(.system(size: 12).monospaced())
-                        .fixedSize(horizontal: false, vertical: false)
-                        .textSelection(.enabled)
+                        .padding(.top)
+                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .multilineTextAlignment(.leading)
                     Spacer()
                         .id(0)
                 }
@@ -44,7 +44,13 @@ struct LogView: View {
                 }
             }
         }
-        .navigationTitle("Log output")
+        .contextMenu {
+            Button {
+                UIPasteboard.general.string = GLOBAL_LOG.text
+            } label: {
+                Label("Copy Output", systemImage: "doc.on.doc")
+            }
+        }
     }
     
     init() {

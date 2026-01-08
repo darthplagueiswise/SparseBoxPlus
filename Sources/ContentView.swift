@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PartyUI
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
@@ -13,33 +14,75 @@ struct ContentView: View {
     @State var initError: String?
     @State var lastError: String?
     @State var path = NavigationPath()
+    @State private var showSettingsView: Bool = false
+    
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                Section {
-                    HStack {
-                        Text("Heartbeat status")
-                        Spacer()
-                        Text(heartbeatReady ? AttributedString("running", attributes: .init([.foregroundColor: UIColor.systemGreen])) : AttributedString("not started", attributes: .init([.foregroundColor: UIColor.systemRed])))
+            List {
+                Section(header: HeaderLabel(text: "Device Pairing", icon: "doc"), footer: Text(ddiMounted ? "If you've already imported a pairing file, and the things above aren't green, then make sure that you actually enabled the StikDebug VPN. Also ensure that your pairing file has not expired." : heartbeatReady ? "The Developer Disk Image is not mounted. Open StikDebug and ensure that it's mounted." : "Select or drag and drop a pairing file to continue. If you do not have one, click [here](https://docs.sidestore.io/docs/getting-started/pairing-file) to learn how to generate one.")) {
+                    LabeledContent("Heartbeat Status") {
+                        HStack {
+                            Image(systemName: heartbeatReady ? "checkmark.circle" : "xmark.circle")
+                            Text(heartbeatReady ? "Ready" : "Not Ready")
+                        }
+                        .foregroundStyle(heartbeatReady ? .green : .red)
                     }
-                    HStack {
-                        Text("Developer Disk Image")
-                        Spacer()
-                        Text(ddiMounted ? AttributedString("mounted", attributes: .init([.foregroundColor: UIColor.systemGreen])) : AttributedString("not mounted", attributes: .init([.foregroundColor: UIColor.systemRed])))
+                    LabeledContent("Developer Disk Image") {
+                        HStack {
+                            Image(systemName: ddiMounted ? "checkmark.circle" : "xmark.circle")
+                            Text(ddiMounted ? "Mounted" : "Not Mounted")
+                        }
+                        .foregroundStyle(ddiMounted ? .green : .red)
                     }
-                    Button(pairingFile == nil ? "Select pairing file" : "Reset pairing file") {
+                }
+                Section(header: HeaderLabel(text: "Tweaks", icon: "wrench.and.screwdriver"), footer: Text(Restore.supportedExploitLevel() != .unsupported ? "Hide free developer apps from installd, so you could install more than 3 apps. You need to apply this for each 3 apps you install or update. **This feature is currently unavailable as of right now.**" : "")) {
+                    let tempUnavailable = true
+                    NavigationLink("List Installed Apps") {
+                        AppListView()
+                    }
+                    .disabled(!ddiMounted)
+                    NavigationLink("MobileGestalt Tweaks") {
+                        MobileGestaltView()
+                    }
+                    .disabled(!ddiMounted)
+                    if Restore.supportedExploitLevel() != .unsupported {
+                        Button("Bypass 3-App Limit") {
+                            testBypassAppLimit()
+                        }
+                        .disabled(tempUnavailable || Restore.supportedExploitLevel() != .dotAndSlashes || !heartbeatReady || taskRunning)
+                    }
+                }
+            }
+            .navigationTitle("SparseBox+")
+            .sheet(isPresented: $showSettingsView) {
+                SettingsView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        showSettingsView = true
+                    }) {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 14) {
+                    Button(action: {
                         if pairingFile == nil {
                             showPairingFileImporter.toggle()
                         } else {
                             pairingFile = nil
                         }
+                    }) {
+                        ButtonLabel(text: pairingFile == nil ? "Import Pairing File" : "Remove Pairing File", icon: pairingFile == nil ? "arrow.down.doc" : "xmark")
                     }
+                    .buttonStyle(GlassyButtonStyle(color: pairingFile == nil ? .green : .red))
                     .dropDestination(for: Data.self) { items, location in
                         guard let item = items.first else { return false }
                         pairingFile = String(decoding: item, as: UTF8.self)
                         guard pairingFile?.contains("DeviceCertificate") ?? false else {
-                            lastError = "The file you just dropped is not a pairing file"
-                            showErrorAlert.toggle()
+                            Alertinator.shared.alert(title: "That's not a pairing file!", body: "Please drop a vaild pairing file and try again.")
                             pairingFile = nil
                             return false
                         }
@@ -47,76 +90,18 @@ struct ContentView: View {
                         startHeartbeat()
                         return true
                     }
-                } footer: {
-                    if pairingFile == nil {
-                        Text("Select or drag and drop a pairing file to continue. More info: https://docs.sidestore.io/docs/getting-started/pairing-file")
-                    } else if !heartbeatReady {
-                        Text("Heartbeat is starting")
-                    } else if !ddiMounted {
-                        HStack {
-                            Text("Developer Disk Image is not mounted. Please open StikDebug to mount it to continue.")
-                        }
-                    } else {
-                        Text("Pairing file selected")
-                    }
-                }
-                
-                if !ddiMounted {
-                    Section {
-                        Button("Open StikDebug") {
+                    if !ddiMounted {
+                        Button(action: {
                             if let url = URL(string: "stikjit://") {
                                 UIApplication.shared.open(url)
                             }
+                        }) {
+                            ButtonLabel(text: "Open StikDebug", icon: "bolt")
                         }
+                        .buttonStyle(GlassyButtonStyle())
                     }
                 }
-                
-                Section {
-                    NavigationLink("List installed apps") {
-                        AppListView()
-                    }
-                    .disabled(!ddiMounted)
-                } header: {
-                    Text("Utilities")
-                }
-                Section {
-                    NavigationLink("MobileGestalt tweaks") {
-                        MobileGestaltView()
-                    }
-                    .disabled(!ddiMounted)
-                } header: {
-                    Text("BookRestore exploit")
-                }
-                Section {
-                    let tempUnavailable = true
-                    Button("Bypass 3 app limit") {
-                        testBypassAppLimit()
-                    }
-                    .disabled(tempUnavailable || Restore.supportedExploitLevel() != .dotAndSlashes || !heartbeatReady || taskRunning)
-                } header: {
-                    Text("SparseRestore exploit")
-                } footer: {
-                    Text(
-                        "Hide free developer apps from installd, so you could install more than 3 apps. You need to apply this for each 3 apps you install or update." +
-                        "\nThis feature is currently unavailable when using idevice library." +
-                        (Restore.supportedExploitLevel() == .dotAndSlashes ? "" : "\nYour iOS version (\(UIDevice.current.systemVersion)) does not support SparseRestore.")
-                    )
-                }
-                Section {
-                } footer: {
-                    VStack {
-                        Text("""
-A terrible app by @khanhduytran0. Use it at your own risk.
-Thanks to:
-@SideStore team: idevice, C bindings from StikDebug
-@JJTech0130: SparseRestore and backup exploit
-@hanakim3945: bl_sbx exploit files and writeup
-@PoomSmart: MobileGestalt dump
-@Lakr233: BBackupp
-@libimobiledevice
-""")
-                    }
-                }
+                .modifier(OverlayBackground())
             }
             .fileImporter(isPresented: $showPairingFileImporter, allowedContentTypes: [UTType(filenameExtension: "mobiledevicepairing", conformingTo: .data)!], onCompletion: { result in
                 switch result {
@@ -129,11 +114,6 @@ Thanks to:
                     showErrorAlert.toggle()
                 }
             })
-            .alert("Error", isPresented: $showErrorAlert) {
-                Button("OK") {}
-            } message: {
-                Text(lastError ?? "???")
-            }
             .navigationDestination(for: String.self) { view in
                 if view == "Apply3AppLimitBypass" {
                     Text("TODO")
@@ -141,7 +121,6 @@ Thanks to:
                     Text("Unknown view: \(view)")
                 }
             }
-            .navigationTitle("SparseBox")
         }
         .onAppear {
             if initError != nil {
@@ -184,7 +163,6 @@ Thanks to:
             }
         }
     }
-    
     func savePairingFile() {
         try? pairingFile?.write(to: URL.documentsDirectory.appendingPathComponent("pairingFile.plist"), atomically: true, encoding: .utf8)
     }
@@ -304,4 +282,8 @@ Thanks to:
     func ready() -> Bool {
         heartbeatReady
     }
+}
+
+#Preview {
+    ContentView()
 }

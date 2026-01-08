@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1542415F2F0E287C00E9D850 /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1542415E2F0E287C00E9D850 /* DeviceKit */; };
+		15C00D912F0CB2E300DF114F /* PartyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 15C00D902F0CB2E300DF114F /* PartyUI */; };
+		15C00D942F0CB2FD00DF114F /* PartyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 15C00D932F0CB2FD00DF114F /* PartyUI */; };
 		E10DE74D2EEC141D00EC75FA /* downloads.28.sqlitedb in Resources */ = {isa = PBXBuildFile; fileRef = E10DE74C2EEC141D00EC75FA /* downloads.28.sqlitedb */; };
 		E10DE74E2EEC141D00EC75FA /* BLDatabaseManager.sqlite-shm in Resources */ = {isa = PBXBuildFile; fileRef = E10DE74A2EEC141D00EC75FA /* BLDatabaseManager.sqlite-shm */; };
 		E10DE74F2EEC141D00EC75FA /* BLDatabaseManager.sqlite-wal in Resources */ = {isa = PBXBuildFile; fileRef = E10DE74B2EEC141D00EC75FA /* BLDatabaseManager.sqlite-wal */; };
@@ -27,7 +30,7 @@
 		E10DE74A2EEC141D00EC75FA /* BLDatabaseManager.sqlite-shm */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BLDatabaseManager.sqlite-shm"; sourceTree = "<group>"; };
 		E10DE74B2EEC141D00EC75FA /* BLDatabaseManager.sqlite-wal */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BLDatabaseManager.sqlite-wal"; sourceTree = "<group>"; };
 		E10DE74C2EEC141D00EC75FA /* downloads.28.sqlitedb */ = {isa = PBXFileReference; lastKnownFileType = file; path = downloads.28.sqlitedb; sourceTree = "<group>"; };
-		E14761ED2DF135F000FC89FB /* SparseBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SparseBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E14761ED2DF135F000FC89FB /* SparseBoxPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SparseBoxPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E147622F2DF1365A00FC89FB /* empty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = empty.swift; sourceTree = "<group>"; };
 		E14762322DF1368000FC89FB /* eligibility.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = eligibility.plist; sourceTree = "<group>"; };
 		E14762332DF1368000FC89FB /* FeatureFlags_Global.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = FeatureFlags_Global.plist; sourceTree = "<group>"; };
@@ -44,17 +47,17 @@
 		E147626E2DF13CB700FC89FB /* libplist-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libplist-2.0.a"; sourceTree = "<group>"; };
 		E147626F2DF13CB700FC89FB /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libssl.a; sourceTree = "<group>"; };
 		E14762702DF13CB700FC89FB /* libusbmuxd-2.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libusbmuxd-2.0.a"; sourceTree = "<group>"; };
-		E15588832ECF1BA000D0BF93 /* SparseBox-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "SparseBox-Info.plist"; sourceTree = "<group>"; };
+		E15588832ECF1BA000D0BF93 /* SparseBoxPlus-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SparseBoxPlus-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E1D10D492DF17DD700995A8E /* Exceptions for "Sources" folder in "SparseBox" target */ = {
+		E1D10D492DF17DD700995A8E /* Exceptions for "Sources" folder in "SparseBoxPlus" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				MobileDevice/MobileDevice.swift,
 				SparseRestore/README.txt,
 			);
-			target = E14761EC2DF135F000FC89FB /* SparseBox */;
+			target = E14761EC2DF135F000FC89FB /* SparseBoxPlus */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -62,7 +65,7 @@
 		E14761EF2DF135F000FC89FB /* Sources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E1D10D492DF17DD700995A8E /* Exceptions for "Sources" folder in "SparseBox" target */,
+				E1D10D492DF17DD700995A8E /* Exceptions for "Sources" folder in "SparseBoxPlus" target */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -74,10 +77,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15C00D942F0CB2FD00DF114F /* PartyUI in Frameworks */,
+				1542415F2F0E287C00E9D850 /* DeviceKit in Frameworks */,
 				E14762652DF138AB00FC89FB /* NIOFoundationCompat in Frameworks */,
 				E14762672DF138AB00FC89FB /* NIOPosix in Frameworks */,
 				E14762632DF138AB00FC89FB /* NIOCore in Frameworks */,
 				E15588822ECF1AF300D0BF93 /* NIOHTTP1 in Frameworks */,
+				15C00D912F0CB2E300DF114F /* PartyUI in Frameworks */,
 				E15588802ECF1AF300D0BF93 /* NIO in Frameworks */,
 				E15588882ECF25A000D0BF93 /* FlyingFox in Frameworks */,
 			);
@@ -89,7 +95,7 @@
 		E14761E42DF135F000FC89FB = {
 			isa = PBXGroup;
 			children = (
-				E15588832ECF1BA000D0BF93 /* SparseBox-Info.plist */,
+				E15588832ECF1BA000D0BF93 /* SparseBoxPlus-Info.plist */,
 				E14761EF2DF135F000FC89FB /* Sources */,
 				E14761EE2DF135F000FC89FB /* Products */,
 				E147622A2DF1364F00FC89FB /* include */,
@@ -106,7 +112,7 @@
 		E14761EE2DF135F000FC89FB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E14761ED2DF135F000FC89FB /* SparseBox.app */,
+				E14761ED2DF135F000FC89FB /* SparseBoxPlus.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -150,9 +156,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E14761EC2DF135F000FC89FB /* SparseBox */ = {
+		E14761EC2DF135F000FC89FB /* SparseBoxPlus */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E14761F82DF135F100FC89FB /* Build configuration list for PBXNativeTarget "SparseBox" */;
+			buildConfigurationList = E14761F82DF135F100FC89FB /* Build configuration list for PBXNativeTarget "SparseBoxPlus" */;
 			buildPhases = (
 				E14761E92DF135F000FC89FB /* Sources */,
 				E14761EA2DF135F000FC89FB /* Frameworks */,
@@ -165,7 +171,7 @@
 			fileSystemSynchronizedGroups = (
 				E14761EF2DF135F000FC89FB /* Sources */,
 			);
-			name = SparseBox;
+			name = SparseBoxPlus;
 			packageProductDependencies = (
 				E14762622DF138AB00FC89FB /* NIOCore */,
 				E14762642DF138AB00FC89FB /* NIOFoundationCompat */,
@@ -173,9 +179,12 @@
 				E155887F2ECF1AF300D0BF93 /* NIO */,
 				E15588812ECF1AF300D0BF93 /* NIOHTTP1 */,
 				E15588872ECF25A000D0BF93 /* FlyingFox */,
+				15C00D902F0CB2E300DF114F /* PartyUI */,
+				15C00D932F0CB2FD00DF114F /* PartyUI */,
+				1542415E2F0E287C00E9D850 /* DeviceKit */,
 			);
 			productName = SparseBox;
-			productReference = E14761ED2DF135F000FC89FB /* SparseBox.app */;
+			productReference = E14761ED2DF135F000FC89FB /* SparseBoxPlus.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -194,7 +203,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E14761E82DF135F000FC89FB /* Build configuration list for PBXProject "SparseBox" */;
+			buildConfigurationList = E14761E82DF135F000FC89FB /* Build configuration list for PBXProject "SparseBoxPlus" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -206,13 +215,15 @@
 			packageReferences = (
 				E14762612DF138AB00FC89FB /* XCRemoteSwiftPackageReference "swift-nio" */,
 				E15588862ECF25A000D0BF93 /* XCRemoteSwiftPackageReference "FlyingFox" */,
+				15C00D922F0CB2FD00DF114F /* XCRemoteSwiftPackageReference "PartyUI" */,
+				1542415D2F0E287C00E9D850 /* XCRemoteSwiftPackageReference "DeviceKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E14761EE2DF135F000FC89FB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E14761EC2DF135F000FC89FB /* SparseBox */,
+				E14761EC2DF135F000FC89FB /* SparseBoxPlus */,
 			);
 		};
 /* End PBXProject section */
@@ -375,11 +386,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = Z325T66NZ7;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3374H767F3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SparseBox-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SparseBox+";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -396,8 +408,8 @@
 					"$(PROJECT_DIR)/lib",
 					"$(PROJECT_DIR)/Sources/idevice",
 				);
-				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kdt.SparseBox;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jbdotparty.sparseboxplus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SparseBox-Bridging-Header.h";
@@ -414,11 +426,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = Z325T66NZ7;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3374H767F3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SparseBox-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "SparseBox+";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -435,8 +448,8 @@
 					"$(PROJECT_DIR)/lib",
 					"$(PROJECT_DIR)/Sources/idevice",
 				);
-				MARKETING_VERSION = 2.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.kdt.SparseBox;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jbdotparty.sparseboxplus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "SparseBox-Bridging-Header.h";
@@ -448,7 +461,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E14761E82DF135F000FC89FB /* Build configuration list for PBXProject "SparseBox" */ = {
+		E14761E82DF135F000FC89FB /* Build configuration list for PBXProject "SparseBoxPlus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E14761F62DF135F100FC89FB /* Debug */,
@@ -457,7 +470,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E14761F82DF135F100FC89FB /* Build configuration list for PBXNativeTarget "SparseBox" */ = {
+		E14761F82DF135F100FC89FB /* Build configuration list for PBXNativeTarget "SparseBoxPlus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E14761F92DF135F100FC89FB /* Debug */,
@@ -469,6 +482,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		1542415D2F0E287C00E9D850 /* XCRemoteSwiftPackageReference "DeviceKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devicekit/DeviceKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.0;
+			};
+		};
+		15C00D922F0CB2FD00DF114F /* XCRemoteSwiftPackageReference "PartyUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jailbreakdotparty/PartyUI";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		E14762612DF138AB00FC89FB /* XCRemoteSwiftPackageReference "swift-nio" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-nio.git";
@@ -488,6 +517,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1542415E2F0E287C00E9D850 /* DeviceKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1542415D2F0E287C00E9D850 /* XCRemoteSwiftPackageReference "DeviceKit" */;
+			productName = DeviceKit;
+		};
+		15C00D902F0CB2E300DF114F /* PartyUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PartyUI;
+		};
+		15C00D932F0CB2FD00DF114F /* PartyUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 15C00D922F0CB2FD00DF114F /* XCRemoteSwiftPackageReference "PartyUI" */;
+			productName = PartyUI;
+		};
 		E14762622DF138AB00FC89FB /* NIOCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E14762612DF138AB00FC89FB /* XCRemoteSwiftPackageReference "swift-nio" */;
