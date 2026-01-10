@@ -1,5 +1,5 @@
 {
-  "originHash" : "f3a4cf01d684b399ca27777ef025d918a8613d8e352d6af1617c66ab74d58f4a",
+  "originHash" : "12c75e51a605637e2edd3f2cd05172a5b9ab698eda5efff93eb5ffdc6c729def",
   "pins" : [
     {
       "identity" : "devicekit",
@@ -25,7 +25,7 @@
       "location" : "https://github.com/jailbreakdotparty/PartyUI",
       "state" : {
         "branch" : "main",
-        "revision" : "924b089795bb11700c4f07155aa88ffb1af5cac2"
+        "revision" : "a975972366f2d27dddc1fb017b3af08038b2caa5"
       }
     },
     {

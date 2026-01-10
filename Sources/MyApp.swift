@@ -13,6 +13,8 @@ extension UIDocumentPickerViewController {
 
 @main
 struct MyApp: App {
+    @StateObject private var appData = AppData.shared
+    
     init() {
         //setenv("RUST_LOG", "trace", 1)
         //set_debug(true)
@@ -36,7 +38,8 @@ struct MyApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainView()
+                .environmentObject(appData)
         }
     }
 }
@@ -51,4 +54,10 @@ extension UIApplication {
 extension EdgeInsets {
     static let dropdownRowInsets = EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20)
     static let itemRowInsets = EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+}
+
+func doubleSystemVersion() -> Double {
+    let rawSystemVersion = UIDevice.current.systemVersion
+    let parsedSystemVersion = rawSystemVersion.split(separator: ".").prefix(2).joined(separator: ".")
+    return Double(parsedSystemVersion) ?? 0.0
 }
