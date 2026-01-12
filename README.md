@@ -7,6 +7,7 @@
 
 ## How do I use this tool?
 * [SideStore](https://sidestore.io) is recommended, as this method will also give you the pairing file needed for this application.
+* NOTICE: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](). The sideloaded version of StikDebug will NOT work with this tool.
 
 ## Features
 - MobileGestalt Tweaks
