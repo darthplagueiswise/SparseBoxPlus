@@ -7,22 +7,22 @@
 
 ## How do I use this tool?
 * [SideStore](https://sidestore.io) is recommended, as this method will also give you the pairing file needed for this application.
-* NOTICE: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](). The sideloaded version of StikDebug will NOT work with this tool.
+* **IMPORTANT DISCLAIMER**: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](). The sideloaded version of StikDebug will NOT work with this tool.
 
 ## Features
 - MobileGestalt Tweaks
-  - Enable Dynamic Island
-  - Enable Always On Display
-  - Enable Charge Limit
+  - Enable Dynamic Island (26+)
+  - Enable Always On Display (18+)
+  - Enable Charge Limit (17+)
   - Enable Boot Chime
-  - Enable Camera Control
-  - Enable Action Button
-  - Enable Crash Detection
-  - Enable Security Research Device UI
+  - Enable Camera Control (18+)
+  - Enable Action Button (17+)
+  - Enable Crash Detection (probably doesn't actually work though)
+  - Enable Security Research Device UI (26+)
   - Disable Region Restrictions
-  - Enable Apple Intelligence (+ model spoofing)
+  - Enable Apple Intelligence (+ model spoofing) (18+)
   - Allow Installing iPadOS Apps
-  - Enable Apple Pencil Settings
+  - Enable Apple Pencil **Settings**
   - Enable iPadOS UI (**WARNING:** Please do not turn off "Show Dock In Stage Manager" or your device will BOOTLOOP when rotating to landscape. Also, do NOT use this tweak with an alphanumeric passcode!)
   - Enable Internal Storage
   - Enable Internal Features
