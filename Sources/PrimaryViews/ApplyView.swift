@@ -86,13 +86,14 @@ struct ApplyView: View {
                     .padding()
                     .modifier(DynamicGlassEffect(shape: AnyShape(.rect(cornerRadius: backgroundCornerRadius())), useBackground: false))
                     .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .listRowInsets(.zeroInsets)
                 }
                 
                 if ddiMounted || weOnADebugBuild {
                     Section(header: HeaderLabel(text: "Actions", icon: "wrench.and.screwdriver")) {
                         VStack {
                             Button(action: {
+                                Haptic.shared.play(.soft)
                                 saveProductType(appData: AppData.shared)
                                 try! appData.mobileGestalt.write(to: appData.modMGURL)
                                 DispatchQueue.global(qos: .background).async {
@@ -113,6 +114,7 @@ struct ApplyView: View {
                             
                             HStack {
                                 Button(action: {
+                                    Haptic.shared.play(.soft)
                                     try! FileManager.default.removeItem(at: appData.modMGURL)
                                     try! FileManager.default.copyItem(at: appData.origMGURL, to: appData.modMGURL)
                                     appData.mobileGestalt = try! NSMutableDictionary(contentsOf: appData.modMGURL, error: ())
@@ -132,7 +134,10 @@ struct ApplyView: View {
                                 }
                                 .buttonStyle(GlassyButtonStyle(color: .red))
                                 Button(action: {
-                                    respringDevice()
+                                    Haptic.shared.play(.heavy)
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        respringDevice()
+                                    }
                                 }) {
                                     ButtonLabel(text: "Respring", icon: "gobackward")
                                 }

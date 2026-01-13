@@ -27,6 +27,7 @@ struct AppItemView: View {
                     VStack(spacing: 12) {
                         if let bundlePath = appDetails["Path"] {
                             Button(action: {
+                                Haptic.shared.play(.soft)
                                 UIPasteboard.general.string = "file://a\(bundlePath)"
                                 Alertinator.shared.alert(title: "Link Copied!", body: "Copied \(UIPasteboard.general.string ?? "") to clipboard.", actionLabel: "Open Settings", action: {
                                     LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: "com.apple.Preferences")
@@ -39,6 +40,7 @@ struct AppItemView: View {
                         if let containerPath = appDetails["Container"] {
                             
                             Button(action: {
+                                Haptic.shared.play(.soft)
                                 UIPasteboard.general.string = "file://a\(containerPath)"
                                 Alertinator.shared.alert(title: "Link Copied!", body: "Copied \(UIPasteboard.general.string ?? "") to clipboard.", actionLabel: "Open Settings", action: {
                                     LSApplicationWorkspaceDefaultWorkspace().openApplication(withBundleID: "com.apple.Preferences")
