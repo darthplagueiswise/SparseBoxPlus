@@ -7,7 +7,7 @@
 
 ## How do I use this tool?
 * [SideStore](https://sidestore.io) is recommended for installation, as this method will also give you the pairing file needed for this application.
-* **IMPORTANT DISCLAIMER**: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](). The sideloaded version of StikDebug will NOT work with this tool.
+* **IMPORTANT DISCLAIMER**: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](https://github.com/jailbreakdotparty/SparseBoxPlus/releases/tag/stikdebug). The sideloaded version of StikDebug will NOT work with this tool.
 * If, for whatever reason, you want to uninstall SparseBox+, please REVERT your tweaks beforehand. Otherwise, you will NOT be able to revert your tweaks without having to either factory reset your device or use the reset gestalt button in Nugget. Please don't sideload this app with a sideloading method that's prone to revokes!
 
 ## Features
