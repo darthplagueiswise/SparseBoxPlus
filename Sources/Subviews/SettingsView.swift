@@ -35,7 +35,7 @@ struct SettingsView: View {
                             .buttonStyle(GlassyButtonStyle(color: .discord))
                             Button(action: {
                                 Haptic.shared.play(.soft)
-                                openURL(URL(string: "https://github.com/jailbreakdotparty/dirtyZero")!)
+                                openURL(URL(string: "https://github.com/jailbreakdotparty/SparseBoxPlus")!)
                             }) {
                                 ButtonLabel(text: "GitHub", icon: "github", isRegularImage: true)
                             }

@@ -155,7 +155,7 @@ struct AppListView: View {
             .searchable(text: $searchString)
             .navigationTitle("Applist")
         }
-        .disabled(!weOnADebugBuild && !appData.isSparseBoxReady)
+        .modifier(PrimaryViewModifier())
     }
     
     init() {
