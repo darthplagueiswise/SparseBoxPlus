@@ -17,6 +17,8 @@
 #include <limits.h>
 
 #include "jit.h"
+#import "JITEnableContext.h"
+#import "JITEnableContextInternal.h"
 
 void runDebugServerCommand(int pid,
                            DebugProxyHandle* debug_proxy,
@@ -85,7 +87,7 @@ void runDebugServerCommand(int pid,
 
 int debug_app(IdeviceProviderHandle* tcp_provider, const char *bundle_id, LogFuncC logger, DebugAppCallback callback) {
     // Initialize logger
-    idevice_init_logger(Info, Disabled, NULL);
+//    idevice_init_logger(Info, Disabled, NULL);
     IdeviceFfiError* err = 0;
     
     CoreDeviceProxyHandle *core_device = NULL;
@@ -313,8 +315,8 @@ int debug_app_pid(IdeviceProviderHandle* tcp_provider, int pid, LogFuncC logger,
     return 0;
 }
 
-int launch_app_via_proxy(IdeviceProviderHandle* tcp_provider, const char *bundle_id, LogFuncC logger) {
-    idevice_init_logger(Info, Disabled, NULL);
+int launch_app_via_proxy(IdeviceProviderHandle* tcp_provider, const char *bundle_id, int argc, const char* const* argv, LogFuncC logger) {
+//    idevice_init_logger(Info, Disabled, NULL);
     IdeviceFfiError* err = NULL;
 
     CoreDeviceProxyHandle *core_device = NULL;
@@ -382,8 +384,8 @@ int launch_app_via_proxy(IdeviceProviderHandle* tcp_provider, const char *bundle
                                      bundle_id,
                                      NULL,
                                      0,
-                                     NULL,
-                                     0,
+                                     argv,
+                                     argc,
                                      false,
                                      true,
                                      &pid);
@@ -424,3 +426,57 @@ cleanup:
 
     return result;
 }
+
+
+@implementation JITEnableContext(JIT)
+
+- (BOOL)debugAppWithBundleID:(NSString*)bundleID logger:(LogFunc)logger jsCallback:(DebugAppCallback)jsCallback {
+    NSError* err = nil;
+    [self ensureHeartbeatWithError:&err];
+    if(err) {
+        logger(err.localizedDescription);
+        return NO;
+    }
+    
+    return debug_app(provider,
+                     [bundleID UTF8String],
+                     [self createCLogger:logger], jsCallback) == 0;
+}
+
+- (BOOL)debugAppWithPID:(int)pid logger:(LogFunc)logger jsCallback:(DebugAppCallback)jsCallback {
+    NSError* err = nil;
+    [self ensureHeartbeatWithError:&err];
+    if(err) {
+        logger(err.localizedDescription);
+        return NO;
+    }
+    
+    return debug_app_pid(provider,
+                     pid,
+                     [self createCLogger:logger], jsCallback) == 0;
+}
+
+- (BOOL)launchAppWithoutDebug:(NSString*)bundleID args:(NSArray<NSString *>*)args logger:(LogFunc)logger {
+    NSError* err = nil;
+    [self ensureHeartbeatWithError:&err];
+    if(err) {
+        logger(err.localizedDescription);
+        return NO;
+    }
+
+    int argc = (int)args.count;
+    const char* argv[argc+1];
+    argv[argc] = NULL;
+    for (int i = 0; i < argc; i++) {
+        argv[i] = args[i].UTF8String;
+    }
+    int result = launch_app_via_proxy(provider,
+                                      [bundleID UTF8String],
+                                      argc,
+                                      argv,
+                                      [self createCLogger:logger]);
+    return result == 0;
+}
+
+
+@end
