@@ -10,7 +10,7 @@ import UIKit
 import PartyUI
 
 internal enum SelectableTab: Int, CaseIterable {
-    case apply, tweaks, appList
+    case apply, tweaks, filesystem
 }
 
 struct MainView: View {
@@ -26,10 +26,10 @@ struct MainView: View {
                 Group {
                     switch selectedTab {
                     case .tweaks:
-                        TweaksView()
+                        GestaltTweaksView()
                             .modifier(PrimaryViewModifier())
-                    case .appList:
-                        AppListView()
+                    case .filesystem:
+                        FilesystemView()
                             .modifier(PrimaryViewModifier())
                     default:
                         TweaksView()
@@ -44,7 +44,7 @@ struct MainView: View {
                             Image(systemName: "wrench.and.screwdriver")
                         }
                         Button(action: {
-                            selectedTab = .appList
+                            selectedTab = .filesystem
                         }) {
                             Image(systemName: "checklist")
                         }
@@ -56,12 +56,12 @@ struct MainView: View {
                 ApplyView()
                     .tabItem { Label("Apply", systemImage: "house") }
                     .tag(SelectableTab.apply)
-                TweaksView()
+                GestaltTweaksView()
                     .tabItem { Label("Tweaks", systemImage: "wrench.and.screwdriver")}
                     .tag(SelectableTab.tweaks)
-                AppListView()
-                    .tabItem { Label("Applist", systemImage: "checklist")}
-                    .tag(SelectableTab.appList)
+                FilesystemView()
+                    .tabItem { Label("Filesystem", systemImage: "folder")}
+                    .tag(SelectableTab.filesystem)
             }
             .overlay(alignment: .bottom) {
                 if doubleSystemVersion() < 26.0 {

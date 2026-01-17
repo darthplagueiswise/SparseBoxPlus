@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swhitty/FlyingFox",
       "state" : {
-        "revision" : "f9d9a180fca7a1783f4da30a4f0a73533a75b4fd",
-        "version" : "0.26.1"
+        "revision" : "de38230104cf63ef4843cb569ba11c13f8165685",
+        "version" : "0.26.2"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/jailbreakdotparty/PartyUI",
       "state" : {
         "branch" : "main",
-        "revision" : "bdf66d81093c3268570f938f623004a9c1e710f5"
+        "revision" : "2813133f666bee5c8322ccaf7061d9a84761884c"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system.git",
       "state" : {
-        "revision" : "395a77f0aa927f0ff73941d7ac35f2b46d47c9db",
-        "version" : "1.6.3"
+        "revision" : "7c6ad0fc39d0763e0b699210e4124afd5041c5df",
+        "version" : "1.6.4"
       }
     }
   ],

@@ -26,13 +26,9 @@ struct ApplyView: View {
     @State var heartbeatReady = false
     @State var ddiMounted = false
     @State var showPairingFileImporter = false
-    @State var showErrorAlert = false
     @State var taskRunning = false
-    @State var initError: String?
-    @State var lastError: String?
-    @State var path = NavigationPath()
     @State private var showSettingsView: Bool = false
-    @State private var showGestaltView: Bool = false
+    @State private var showLogs: Bool = true
     @State private var hasShownWelcome: Bool = false
     
     @EnvironmentObject var appData: AppData
@@ -58,10 +54,11 @@ struct ApplyView: View {
                                 .fontWeight(.semibold)
                         }
                         Text("HTTP Server Port: \(String(Utils.port))")
-                        TerminalContainer(content: VStack {
-                            LogView()
-                        })
-                        
+                        if showLogs {
+                            TerminalContainer(content: VStack {
+                                LogView()
+                            })
+                        }
                         HStack {
                             HStack {
                                 Image(systemName: heartbeatReady ? "checkmark.circle" : "xmark.circle")
@@ -70,7 +67,7 @@ struct ApplyView: View {
                             .foregroundStyle(heartbeatReady ? .green : .red)
                             .padding(12)
                             .frame(maxWidth: .infinity)
-                            .modifier(DynamicGlassEffect(shape: AnyShape(.rect(cornerRadius: smallPlatterCornerRadius()))))
+                            .modifier(DynamicGlassEffect(color: secondaryBackgroundColor(), shape: AnyShape(.rect(cornerRadius: smallPlatterCornerRadius()))))
                             
                             HStack {
                                 Image(systemName: ddiMounted ? "checkmark.circle" : "xmark.circle")
@@ -79,7 +76,7 @@ struct ApplyView: View {
                             .foregroundStyle(ddiMounted ? .green : .red)
                             .padding(12)
                             .frame(maxWidth: .infinity)
-                            .modifier(DynamicGlassEffect(shape: AnyShape(.rect(cornerRadius: smallPlatterCornerRadius()))))
+                            .modifier(DynamicGlassEffect(color: secondaryBackgroundColor(), shape: AnyShape(.rect(cornerRadius: smallPlatterCornerRadius()))))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -248,14 +245,11 @@ struct ApplyView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
-                        showGestaltView = true
+                        showLogs.toggle()
                     }) {
-                        Image(systemName: "doc")
+                        Image(systemName: "terminal")
                     }
                 }
-            }
-            .sheet(isPresented: $showGestaltView) {
-                GestaltDataView()
             }
             .onAppear {
                 if !hasShownWelcome {
@@ -270,8 +264,7 @@ struct ApplyView: View {
                     savePairingFile()
                     startHeartbeat()
                 case .failure(let error):
-                    lastError = error.localizedDescription
-                    showErrorAlert.toggle()
+                    Alertinator.shared.alert(title: "Error!", body: "\(error.localizedDescription)")
                 }
             })
             .navigationDestination(for: String.self) { view in
@@ -283,10 +276,8 @@ struct ApplyView: View {
             }
         }
         .onAppear {
-            if initError != nil {
-                lastError = initError
-                initError = nil
-                showErrorAlert.toggle()
+            if appData.initError != nil {
+                Alertinator.shared.alert(title: "Failed to initalize!", body: "\(appData.initError ?? "something just happened. and i'm not sure what it was. 💀")")
                 return
             }
             
@@ -340,14 +331,12 @@ struct ApplyView: View {
 
     func testBypassAppLimit() {
         guard Restore.supportedExploitLevel() == .dotAndSlashes else {
-            lastError = "Unsupported iOS version. Must be running iOS 18.1b4 or older."
-            showErrorAlert.toggle()
             return
         }
         Task {
             taskRunning = true
             mbdb = Restore.createBypassAppLimit()
-            path.append("Apply3AppLimitBypass")
+            //path.append("Apply3AppLimitBypass")
             taskRunning = false
         }
     }
@@ -411,8 +400,6 @@ struct ApplyView: View {
     }
     
     func performApply3AppLimitBypass() {
-        lastError = "3 app limit bypass is temporarily disabled."
-        showErrorAlert.toggle()
         /*
         let deviceList = MobileDevice.deviceList()
         guard deviceList.count == 1 else {

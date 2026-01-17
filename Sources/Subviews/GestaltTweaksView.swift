@@ -2,9 +2,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 import PartyUI
 
-struct TweaksView: View {
+struct GestaltTweaksView: View {
     @State private var mbdb: Backup?
     @State private var viewShouldUpdate = false
+    @State private var customGestaltKey: String = ""
+    @State private var customGestaltValue: String = ""
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -12,6 +14,7 @@ struct TweaksView: View {
     @EnvironmentObject var appData: AppData
     
     @AppStorage("BookassetdContainerUUID") var bookassetdUUID: String?
+    @AppStorage("customGestaltKeys") var customGestaltKeys: [String : String] = [:]
     
     var body: some View {
         NavigationStack {
@@ -93,12 +96,62 @@ struct TweaksView: View {
                 }
                 .listRowSeparator(.hidden)
                 .listRowInsets(.dropdownRowInsets)
+                Section(header: HeaderLabel(text: "Custom Gestalt Keys", icon: "paintpalette")) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            TextField("Gestalt Key", text: $customGestaltKey)
+                                .textFieldStyle(GlassyTextFieldStyle())
+                            Button(action: {
+                                customGestaltKey = UIPasteboard.general.string ?? ""
+                            }) {
+                                Image(systemName: "doc.on.doc")
+                            }
+                            .buttonStyle(GlassyButtonStyle(useFullWidth: false))
+                        }
+                        TextField("Gestalt Value (string)", text: $customGestaltValue)
+                            .textFieldStyle(GlassyTextFieldStyle())
+                        Button(action: {
+                            customGestaltKeys[customGestaltKey] = customGestaltValue
+                            customGestaltKey = ""
+                            customGestaltValue = ""
+                        }) {
+                            ButtonLabel(text: "Add Key", icon: "plus")
+                        }
+                        .buttonStyle(GlassyButtonStyle(isDisabled: customGestaltKey.isEmpty || customGestaltValue.isEmpty))
+                    }
+                    .padding()
+                    .modifier(DynamicGlassEffect(shape: AnyShape(.rect(cornerRadius: backgroundCornerRadius())), useBackground: false))
+                    
+                    ForEach(customGestaltKeys.keys.sorted(), id: \.self) { key in
+                        if let value = customGestaltKeys[key] {
+                            ListToggleItem(text: key, icon: "key", isOn: bindingForCustomGestaltKey(key: key, value: value))
+                                .contextMenu {
+                                    Button(action: {
+                                        Alertinator.shared.alert(title: "Custom Key Info", body: "Key: \(key)\nValue: \(value)")
+                                    }) {
+                                        Label("Get Info", systemImage: "info.circle")
+                                    }
+                                    Button(action: {
+                                        // set the binding to false
+                                        bindingForCustomGestaltKey(key: key, value: value).wrappedValue = false
+                                        customGestaltKeys.removeValue(forKey: key)
+                                        customGestaltKeys[key] = nil
+                                    }) {
+                                        Label("Remove Key", systemImage: "key")
+                                    }
+                                }
+                                .tint(.primary)
+                        }
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
             }
             .listStyle(.plain)
             .navigationTitle("Tweaks")
             .onAppear {
                 if appData.initError != nil {
-                    Alertinator.shared.alert(title: "Error!", body: "\(appData.initError ?? "something happened lol")")
+                    Alertinator.shared.alert(title: "Error!", body: "\(appData.initError ?? "something just happened. and i'm not sure what it was. 💀")")
                     return
                 }
                 
@@ -211,6 +264,29 @@ struct TweaksView: View {
         )
     }
     
+    func bindingForCustomGestaltKey(key: String, value: String) -> Binding<Bool> {
+        guard let cacheExtra = appData.mobileGestalt["CacheExtra"] as? NSMutableDictionary else {
+            return State(initialValue: false).projectedValue
+        }
+        
+        return Binding<Bool>(
+            get: {
+                _ = viewShouldUpdate
+                return cacheExtra[key] as? String == value
+            },
+            set: { enabled in
+                if enabled {
+                    cacheExtra[key] = value
+                } else {
+                    cacheExtra.removeObject(forKey: key)
+                }
+                DispatchQueue.main.async {
+                    viewShouldUpdate.toggle()
+                }
+            }
+        )
+    }
+    
     func bindingForTrollPad() -> Binding<Bool> {
         // We're going to overwrite DeviceClassNumber but we can't do it via CacheExtra, so we need to do it via CacheData instead
         guard let cacheData = appData.mobileGestalt["CacheData"] as? NSMutableData,
@@ -292,6 +368,7 @@ struct TweaksView: View {
 
 #Preview {
     NavigationStack {
-        TweaksView()
+        GestaltTweaksView()
+            .environmentObject(AppData())
     }
 }

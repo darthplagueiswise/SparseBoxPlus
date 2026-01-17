@@ -45,7 +45,6 @@ struct MobileGestaltViewer<Content: View>: View {
     @State var topLevelCache: [String: Any] = [:]
     @State var searchRequest: String = ""
     @ViewBuilder var content: Content
-    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
@@ -58,15 +57,6 @@ struct MobileGestaltViewer<Content: View>: View {
             .navigationTitle("MobileGestalt Data")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchRequest, prompt: "Search Keys")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                    }
-                }
-            }
             .onAppear {
                 gestaltData = loadGestaltData() as? [String: Any] ?? [:]
                 topLevelCache = gestaltData["CacheExtra"] as? [String: Any] ?? [:]
