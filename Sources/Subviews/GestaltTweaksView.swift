@@ -7,6 +7,10 @@ struct GestaltTweaksView: View {
     @State private var viewShouldUpdate = false
     @State private var customGestaltKey: String = ""
     @State private var customGestaltValue: String = ""
+    @State private var customDeviceName: String = ""
+    @State private var hasCustomDeviceNameBeenSet: Bool = false
+    
+    @State private var originalSubtype: Int = 2436
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -19,6 +23,50 @@ struct GestaltTweaksView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section(header: HeaderLabel(text: "Device Artwork", icon: "paintbrush.pointed")) {
+                    HStack(spacing: 10) {
+                        TextField("Custom Device Name", text: $customDeviceName)
+                            .textFieldStyle(GlassyTextFieldStyle(isDisabled: hasCustomDeviceNameBeenSet))
+                        if hasCustomDeviceNameBeenSet {
+                            Button(action: {
+                                hasCustomDeviceNameBeenSet = false
+                            }) {
+                                Image(systemName: "xmark")
+                            }
+                            .buttonStyle(GlassyButtonStyle(color: .red, useFullWidth: false))
+                        } else {
+                            Button(action: {
+                                setDeviceModelName()
+                            }) {
+                                Image(systemName: "checkmark")
+                                    .frame(width: 24, height: 24)
+                            }
+                            .buttonStyle(GlassyButtonStyle(color: .green, useFullWidth: false))
+                        }
+                    }
+                    HStack {
+                        Picker("Subtype", selection: $appData.deviceSubtype) {
+                            Text("Default (\(originalSubtype))").tag(originalSubtype)
+                            Text("iPhone 14 Pro").tag(2436)
+                            Text("iPhone 14 Pro Max").tag(2796)
+                            Text("iPhone 15 Pro Max").tag(2976)
+                            if doubleSystemVersion() >= 18.0 {
+                                Text("iPhone 16 Pro").tag(2622)
+                                Text("iPhone 16 Pro Max").tag(2868)
+                            }
+                            if doubleSystemVersion() >= 26.0 {
+                                Text("iPhone Air").tag(2736)
+                            }
+                            if UIDevice._hasHomeButton() {
+                                Text("iPhone X Gestures").tag(2436)
+                            }
+                        }
+                        .modifier(GlassyListRowBackground())
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.dropdownRowInsets)
+                
                 Section(header: HeaderLabel(text: "Software-Oriented Features", icon: "gearshape")) {
                     ListToggleItem(text: "Enable Dynamic Island", icon: "platter.filled.top.iphone", minSupportedVersion: 26.0, isOn: bindingForMGKeys(["YlEtTtHlNesRBMal1CqRaA"]))
                     ListToggleItem(text: "Enable Always On Display", icon: "sun.max", minSupportedVersion: 18.0, isOn: bindingForMGKeys(["j8/Omm6s1lsmTDFsXjsBfA", "2OOJf1VhaM7NxfRok3HbWQ"]))
@@ -43,14 +91,31 @@ struct GestaltTweaksView: View {
                     ListToggleItem(text: "Enable SRD UI", icon: "terminal", minSupportedVersion: 26.0, isOn: bindingForMGKeys(["XYlJKKkj2hztRP1NWWnhlw"]))
                     ListToggleItem(text: "Disable Region Restrictions", icon: "globe", isOn: bindingForRegionRestriction())
                     ListToggleItem(text: "Enable Apple Intelligence", icon: "apple.intelligence", minSupportedVersion: 18.1, isOn: bindingForAppleIntelligence())
-                    HStack {
+                    HStack(spacing: 10) {
                         Picker("Model Spoofing", selection:$appData.productType) {
                             Text("Default").tag(machineName())
                             if UIDevice.current.userInterfaceIdiom == .pad {
-                                Text("iPad Pro 11 inch 5th Gen").tag("iPad16,3")
+                                if doubleSystemVersion() >= 17.4 {
+                                    Text("iPad Pro 11-inch (M4)").tag("iPad16,3")
+                                    Text("iPad Pro 11-inch (M4, Cellular)").tag("iPad16,4")
+                                }
+                                Text("iPad Pro 11-inch (4th Gen)").tag("iPad14,3")
+                                Text("iPad Pro 11-inch (4th Gen, Cellular)").tag("iPad14,4")
                             } else {
+                                Text("iPhone 15 Pro").tag("iPhone16,1")
                                 Text("iPhone 15 Pro Max").tag("iPhone16,2")
-                                Text("iPhone 16 Pro Max").tag("iPhone17,2")
+                                if doubleSystemVersion() >= 18.0 {
+                                    Text("iPhone 16").tag("iPhone17,3")
+                                    Text("iPhone 16 Plus").tag("iPhone17,4")
+                                    Text("iPhone 16 Pro").tag("iPhone17,1")
+                                    Text("iPhone 16 Pro Max").tag("iPhone17,2")
+                                }
+                                if doubleSystemVersion() >= 26.0 {
+                                    Text("iPhone 17").tag("iPhone18,3")
+                                    Text("iPhone 17 Pro").tag("iPhone18,1")
+                                    Text("iPhone 17 Pro Max").tag("iPhone18,2")
+                                    Text("iPhone Air").tag("iPhone18,4")
+                                }
                             }
                         }
                         .modifier(GlassyListRowBackground())
@@ -58,7 +123,7 @@ struct GestaltTweaksView: View {
                             Alertinator.shared.alert(title: "Device Spoofing Info", body: "Only spoof your device model if you want to download Apple Intelligence. This may break Face ID. If you decide to unspoof and want to keep Apple Intelligence, do NOT re-enter the Apple Intelligence & Siri menu in Settings.")
                         }) {
                             Image(systemName: "info.circle")
-                                .frame(width: 24, height: 24)
+                                .frame(width: 24, height: 22)
                         }
                         .buttonStyle(GlassyButtonStyle(useFullWidth: false))
                     }
@@ -74,7 +139,7 @@ struct GestaltTweaksView: View {
                     if UIDevice.current.userInterfaceIdiom == .pad {
                         ListToggleItem(text: "Enable Stage Manager", icon: "squares.leading.rectangle", isOn: bindingForMGKeys(["qeaj75wk3HF4DwQ8qbIi7g"]))
                     }
-                    HStack {
+                    HStack(spacing: 10) {
                         ListToggleItem(text: "Enable iPadOS UI", icon: "ipad", isOn: bindingForTrollPad())
                             .disabled(cacheExtra?["+3Uf0Pm5F8Xy7Onyvko0vA"] as? String != "iPhone")
                         Button(action: {
@@ -157,6 +222,15 @@ struct GestaltTweaksView: View {
                 
                 if let cacheExtra = appData.mobileGestalt["CacheExtra"] as? NSMutableDictionary {
                     appData.productType = cacheExtra["h9jDsbgj7xIVeIQ8S3/X3Q"] as! String
+                }
+                
+                
+                if let originalCacheExtra = appData.originalMobileGestalt["CacheExtra"] as? NSMutableDictionary {
+                    if let artworkDetails = originalCacheExtra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary {
+                        appData.deviceSubtype = artworkDetails["ArtworkDeviceSubType"] as? Int ?? 2436
+                        originalSubtype = artworkDetails["ArtworkDeviceSubType"] as? Int ?? 2436
+                        appData.deviceModelName = artworkDetails["ArtworkDeviceProductDescription"] as? String ?? "iPhone xx"
+                    }
                 }
             }
             .onChange(of: scenePhase) { newPhase in
@@ -287,6 +361,28 @@ struct GestaltTweaksView: View {
         )
     }
     
+    /*
+    func bindingForDeviceModelName(value: String) -> Binding<Bool> {
+        guard let cacheExtra = appData.mobileGestalt["CacheExtra"] as? NSMutableDictionary, let artworkDetails = cacheExtra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary else {
+            return State(initialValue: false).projectedValue
+        }
+        
+        return Binding<Bool>(
+            get: {
+                _ = viewShouldUpdate
+                return artworkDetails[value] as? String == value
+            },
+            set: { enabled in
+                if enabled {
+                    artworkDetails["ArtworkDeviceProductDescription"] = value
+                } else {
+                    artworkDetails["ArtworkDeviceProductDescription"] = appData.deviceModelName
+                }
+            }
+        )
+    }
+    */
+    
     func bindingForTrollPad() -> Binding<Bool> {
         // We're going to overwrite DeviceClassNumber but we can't do it via CacheExtra, so we need to do it via CacheData instead
         guard let cacheData = appData.mobileGestalt["CacheData"] as? NSMutableData,
@@ -363,6 +459,17 @@ struct GestaltTweaksView: View {
             FileToRestore(contents: appData.eligibilityData, to: URL(filePath: "/var/db/eligibilityd/eligibility.plist")),
             FileToRestore(contents: appData.featureFlagsData, to: URL(filePath: "/var/preferences/FeatureFlags/Global.plist")),
         ]
+    }
+    
+    func setDeviceModelName() {
+        if let cacheExtra = appData.mobileGestalt["CacheExtra"] as? NSMutableDictionary {
+            if let artworkDetails = cacheExtra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary {
+                if !customDeviceName.isEmpty {
+                    artworkDetails["ArtworkDeviceProductDescription"] = customDeviceName
+                    hasCustomDeviceNameBeenSet = true
+                }
+            }
+        }
     }
 }
 

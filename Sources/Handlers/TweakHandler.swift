@@ -13,9 +13,12 @@ final class AppData: ObservableObject {
     static let shared = AppData()
     
     @Published var mobileGestalt: NSMutableDictionary
+    @Published var originalMobileGestalt: NSMutableDictionary
     @Published var featureFlagsData = Data()
     @Published var eligibilityData = Data()
     @Published var productType = machineName()
+    @Published var deviceSubtype: Int = 2436
+    @Published var deviceModelName: String = "iPhone xx"
     
     @Published var taskRunning = false
     @Published var initError: String?
@@ -46,8 +49,10 @@ final class AppData: ObservableObject {
             chmod(modMGURL.path, 0o644)
             
             self.mobileGestalt = try NSMutableDictionary(contentsOf: modMGURL, error: ())
+            self.originalMobileGestalt = try NSMutableDictionary(contentsOf: origMGURL, error: ())
         } catch {
             self.mobileGestalt = [:]
+            self.originalMobileGestalt = [:]
             self.initError = "Failed to copy MobileGestalt: \(error)"
             taskRunning = true
         }
@@ -260,4 +265,8 @@ func machineName() -> String {
 func saveProductType(appData: AppData) {
     let cacheExtra = appData.mobileGestalt["CacheExtra"] as! NSMutableDictionary
     cacheExtra["h9jDsbgj7xIVeIQ8S3/X3Q"] = appData.productType
+    
+    if let artworkDetails = cacheExtra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary {
+        artworkDetails["ArtworkDeviceSubType"] = appData.deviceSubtype
+    }
 }

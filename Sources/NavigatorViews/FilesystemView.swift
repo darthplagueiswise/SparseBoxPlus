@@ -17,7 +17,7 @@ struct FilesystemView: View {
                         ButtonLabel(text: "List Installed Apps", icon: "app")
                     }
                     NavigationLink(destination: BrowseFSView()) {
-                        ButtonLabel(text: "Browse Photos Domain", icon: "camera")
+                        ButtonLabel(text: "Browse AFC (Media)", icon: "photo")
                     }
                     NavigationLink(destination: GestaltDataView()) {
                         ButtonLabel(text: "View MobileGestalt Data", icon: "doc")
