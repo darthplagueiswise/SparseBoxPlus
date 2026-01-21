@@ -15,7 +15,16 @@ jobs:
 
       - name: Install Swift 6.2 toolchain
         run: |
-          ... (as above)
+          set -euo pipefail
+          URL="https://download.swift.org/swift-6.2-release/xcode/swift-6.2-RELEASE/swift-6.2-RELEASE-osx.pkg"
+          echo "Downloading Swift 6.2 toolchain..."
+          curl -L -f -o swift-6.2-RELEASE-osx.pkg "$URL"
+          echo "Installing Swift 6.2 toolchain..."
+          sudo installer -pkg swift-6.2-RELEASE-osx.pkg -target /\
+          rm -f swift-6.2-RELEASE-osx.pkg
+          echo "Swift installed; verifying:"
+          swift --version
+          echo "TOOLCHAINS=swift" >> "$GITHUB_ENV"
 
       - name: Build
         run: |
