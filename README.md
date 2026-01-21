@@ -1,5 +1,5 @@
 # SparseBox+
-**SparseBox, but with a proper UI. iOS 16.0 - iOS 26.1 (and 26.2 *beta 1*).**
+**SparseBox, but with a proper UI. iOS 17.4 - iOS 26.1.**
 
 [Download](https://github.com/jailbreakdotparty/SparseBoxPlus/releases/latest) • [jbdotparty Discord](https://jailbreak.party/discord) • [jbdotparty Website](https://jailbreak.party)
 >[!WARNING]
@@ -7,11 +7,13 @@
 
 ## How do I use this tool?
 * [SideStore](https://sidestore.io) is recommended for installation, as this method will also give you the pairing file needed for this application.
-* **IMPORTANT DISCLAIMER**: You will need the **app store version** (or v2.3.5 and below) of [StikDebug](https://apps.apple.com/ro/app/stikdebug/id6744045754), which has been pulled unfournately. However, if you have ever purchased StikDebug in the past, you can get it back with [PancakeStore](https://github.com/jailbreakdotparty/PancakeStore). Another option is to used a paid developer certificate with VPN entitlements and install [StikDebug v2.3.4](https://github.com/jailbreakdotparty/SparseBoxPlus/releases/tag/stikdebug). The sideloaded version of StikDebug will NOT work with this tool.
+* You will also need [LocalDevVPN](https://apps.apple.com/us/app/localdevvpn/id6755608044) to use this tool, which is available on the App Store.
 * If, for whatever reason, you want to uninstall SparseBox+, please REVERT your tweaks beforehand. Otherwise, you will NOT be able to revert your tweaks without having to either factory reset your device or use the reset gestalt button in Nugget. Please don't sideload this app with a sideloading method that's prone to revokes!
 
 ## Features
 - MobileGestalt Tweaks
+  - Subtype Changer (most configurations enable the Dyanmic Island).
+  - Change Device Model Name
   - Enable Dynamic Island (26+)
   - Enable Always On Display (18+)
   - Enable Charge Limit (17+)
